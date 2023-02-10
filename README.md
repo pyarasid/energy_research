@@ -1,1 +1,1 @@
-# energy_research
+# Energy Research
