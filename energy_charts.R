@@ -253,7 +253,7 @@ electricity_wind_series <- read.csv("share-electricity-wind.csv")%>%
 #reading solar csv
 electricity_solar_series <- read.csv("share-electricity-solar.csv") %>%
   rename("solar_electricity"="Solar....electricity.")
-  
+
 #joining the two df and calculating total from wind and solar
 elec_wind_solar_series <- electricity_solar_series %>% 
   select(c("Entity","Year", "solar_electricity")) %>% 
@@ -300,7 +300,7 @@ elec_wind_solar_series<- elec_wind_solar_series %>%
 
 #creating average of income classification
 elec_wind_solar_series_error <- elec_wind_solar_series %>% 
- # filter(`Income group`!="Low income") %>% 
+  # filter(`Income group`!="Low income") %>% 
   group_by(`Income group`, `Year`) %>% 
   summarise(average = mean(total_elec)) %>%
   ungroup() %>% 
@@ -427,7 +427,7 @@ wdi_scatter_df %>%
         legend.title = element_blank())+
   xlab("GDP per capita (constant 2015 US$)")+
   ylab("Share of electricity production from solar and wind (%)")
-  
+
 ggsave("scatter_gdp_windSolar.png", dpi = 300, height = 6, width = 10)
 
 #For wind
@@ -462,7 +462,7 @@ wdi_scatter_df %>%
 
 ggsave("scatter_gdp_solar.png", dpi = 300, height = 6, width = 10)
 
-  
+
 ###CHART 5==========================
 #reading income classification for FY2020
 income_Class_2020 <- read_excel("OGHIST(1).xlsx", sheet = "Country Analytical History")
@@ -493,12 +493,12 @@ setdiff(wdi_ppp_co2$Country, income_Class_2020$Country)
 #recoding names
 wdi_ppp_co2 <-  wdi_ppp_co2 %>% 
   mutate(Country=recode(Country,
-                         "Cote d'Ivoire"="Côte d'Ivoire",
-                         "Curacao"= "Curaçao",
-                         "Czechia"= "Czech Republic",
-                         "Korea, Dem. People's Rep."= "Korea, Dem. Rep.",
-                         "Sao Tome and Principe"="São Tomé and Príncipe",
-                         "Turkiye" = "Türkiye")) 
+                        "Cote d'Ivoire"="Côte d'Ivoire",
+                        "Curacao"= "Curaçao",
+                        "Czechia"= "Czech Republic",
+                        "Korea, Dem. People's Rep."= "Korea, Dem. Rep.",
+                        "Sao Tome and Principe"="São Tomé and Príncipe",
+                        "Turkiye" = "Türkiye")) 
 
 #converting to nmeric
 wdi_ppp_co2$`GDP per capita, PPP (constant 2017 international $)` <- as.numeric(wdi_ppp_co2$`GDP per capita, PPP (constant 2017 international $)`)
