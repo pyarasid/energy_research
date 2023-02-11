@@ -465,6 +465,7 @@ ggsave("scatter_gdp_solar.png", dpi = 300, height = 6, width = 10)
 
 ###CHART 5==========================
 #reading income classification for FY2020
+
 income_Class_2020 <- read_excel("OGHIST(1).xlsx", sheet = "Country Analytical History")
 
 income_Class_2020 <- income_Class_2020[1:218,]
@@ -522,5 +523,73 @@ wdi_ppp_co2_income %>%
         strip.text = element_text(face="bold", size = 10),
         legend.position = "bottom",
         legend.title = element_blank())
-
 ggsave("scatter_gdp_co2.png", dpi = 300, height = 6, width = 10)
+
+
+#filtering data
+wdi_data_decoup <- wdi_data %>% 
+  filter(`Series Name`%in% c("GDP per capita, PPP (constant 2017 international $)",
+                             "CO2 emissions (metric tons per capita)")) 
+
+#removing column with less data
+wdi_data_decoup <- wdi_data_decoup %>% 
+  select(-c("1972":"1989")) %>% 
+  select(-c("2020":"2021")) 
+
+#converting to long format
+wdi_data_decoup <- wdi_data_decoup %>% 
+  pivot_longer(!c("Country", "Code", "Series Name"), names_to = "Year", values_to = "val") %>% 
+  pivot_wider(names_from = "Series Name", values_from = "val") 
+
+
+#checking the names mismatch
+setdiff(wdi_data_decoup$Country, income_Class_2020$Country)
+
+#recoding names
+wdi_data_decoup<-  wdi_data_decoup %>% 
+  mutate(Country=recode(Country,
+                        "Cote d'Ivoire"="Côte d'Ivoire",
+                        "Curacao"= "Curaçao",
+                        "Czechia"= "Czech Republic",
+                        "Korea, Dem. People's Rep."= "Korea, Dem. Rep.",
+                        "Sao Tome and Principe"="São Tomé and Príncipe",
+                        "Turkiye" = "Türkiye")) 
+
+#converting to nmeric
+wdi_data_decoup$`GDP per capita, PPP (constant 2017 international $)` <- as.numeric(wdi_data_decoup$`GDP per capita, PPP (constant 2017 international $)`)
+wdi_data_decoup$`CO2 emissions (metric tons per capita)` <- as.numeric(wdi_data_decoup$`CO2 emissions (metric tons per capita)`)
+
+#joining the income classification for FY2020 df
+wdi_decoup_income <- wdi_data_decoup %>% 
+  left_join(income_Class_2020, by = c("Country", "Code")) %>% 
+  rename("Income group"="FY20") %>% 
+  drop_na() 
+
+
+#subsetting only few countries for charting
+wdi_decoup_income_sub <- wdi_decoup_income %>% 
+  filter(Country%in%c("China", "Germany", "Japan", "United Kingdom",
+                      "United States", "India", "Indonesia", "Brazil", "Russian Federation",
+                      "South Africa")) 
+
+#creating chart
+wdi_decoup_income_sub %>% 
+  ggplot(aes(`GDP per capita, PPP (constant 2017 international $)`, 
+             `CO2 emissions (metric tons per capita)`))+
+  geom_point(aes(color=Country), show.legend = FALSE)+
+  geom_smooth(aes(color=`Income group`), se=FALSE, size=1)+
+  geom_text(aes(label=
+                  ifelse(Year=="1990", Country, "")), 
+            color="black", face="bold", vjust=1.2,  size=2.5, fontface = "bold")+
+  scale_color_manual(breaks = c("High income", "Upper middle income", "Lower middle income"),
+                     values=c("High income"="#4daf4a", "Upper middle income"="#377eb8", "Lower middle income"="#d95f02",
+                              "Germany"="#a6cee3", "Japan"= "#1f78b4", "United Kingdom"="#b2df8a", 
+                              "United States"="#33a02c","China"="#fb9a99", "Brazil"= "#e31a1c", "Russian Federation"="#fdbf6f", 
+                              "South Africa"= "#ff7f00","India"= "#cab2d6","Indonesia"= "#6a3d9a"))+
+  theme_classic()+
+  theme(axis.text = element_text(size = 10),
+        legend.position = "bottom",
+        legend.title = element_blank())+
+  ggtitle("Co2 emissions against GDP per capita, PPP (1990-2019)")
+
+ggsave("decoup_co2_ppp.png", dpi = 300, height = 6, width = 10)
