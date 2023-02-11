@@ -580,7 +580,7 @@ wdi_decoup_income_sub %>%
   geom_smooth(aes(color=`Income group`), se=FALSE, size=1)+
   geom_text(aes(label=
                   ifelse(Year=="1990", Country, "")), 
-            color="black", face="bold", vjust=1.2,  size=2.5, fontface = "bold")+
+            color="black", vjust=1.2,  size=2.5, fontface = "bold")+
   scale_color_manual(breaks = c("High income", "Upper middle income", "Lower middle income"),
                      values=c("High income"="#4daf4a", "Upper middle income"="#377eb8", "Lower middle income"="#d95f02",
                               "Germany"="#a6cee3", "Japan"= "#1f78b4", "United Kingdom"="#b2df8a", 
