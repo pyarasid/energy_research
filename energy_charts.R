@@ -144,8 +144,8 @@ electricity_error_solar <- elec_wind_solar %>%
 electricity_error_solar %>% 
   ggplot(aes(`Income group`, average))+
   geom_col(position = position_dodge(width = .9), fill="steelblue")+
-  geom_text(aes(label = round(average, 0)), vjust=-0.5)+
-  scale_y_continuous(limits = c(0, 12), breaks = seq(0, 12, 1))+
+  geom_text(aes(label = round(average, 1)), vjust=-0.5)+
+  scale_y_continuous(limits = c(0, 4), breaks = seq(0, 4, 1))+
   theme_bw()+
   theme(axis.text = element_text(size = 10),
         legend.position = "bottom",
@@ -201,7 +201,7 @@ electricity_error_wind %>%
   ggplot(aes(`Income group`, average))+
   geom_col(position = position_dodge(width = .9), fill="steelblue")+
   geom_text(aes(label = round(average, 1)), vjust=-0.5)+
-  scale_y_continuous(limits = c(0, 12), breaks = seq(0, 12, 1))+
+  scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 1))+
   theme_bw()+
   theme(axis.text = element_text(size = 10),
         legend.position = "bottom",
