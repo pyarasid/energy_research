@@ -5,6 +5,8 @@ library(tidyverse)
 library(scales)
 library(hrbrthemes)
 library(tidyr)
+library(writexl)
+library(xlsx)
 
 ###CHART 2=====================
 
@@ -593,3 +595,181 @@ wdi_decoup_income_sub %>%
   ggtitle("Co2 emissions against GDP per capita, PPP (1990-2019)")
 
 ggsave("decoup_co2_ppp.png", dpi = 300, height = 6, width = 10)
+
+
+
+###CHART 1=======================
+
+#reading GDP per capita excel
+gdppercap_data <- read_excel("GDPpercap_wdi.xlsx", sheet = "Data") 
+
+#countries that moved from middle income to high income between 1989 to 2000
+high_country <- c('Aruba', 'Cyprus',
+                  'Greece',
+                  'Guam',
+                  'Korea, Rep.',
+                  'Macao SAR, China',
+                  'New Caledonia',
+                  'Northern Mariana Islands',
+                  'Portugal',
+                  'Saudi Arabia',
+                  'Slovenia')
+
+#subset year and countries
+gdppercap_high <- gdppercap_data %>% 
+  filter(Country%in%high_country) %>% 
+  pivot_longer(!c("Country", "Code", "Series Name"), names_to = "year", values_to = "val") %>% 
+  filter(year%in%c("1989", "1990", "1991", "1992", "1993", "1994", "1995",
+                   "1996", "1997", "1998", "1999", "2000")) 
+
+#converting to numeric column and dropping missing values
+gdppercap_high$val <- as.numeric(gdppercap_high$val)
+gdppercap_high <- gdppercap_high %>% 
+  drop_na()
+
+#taking the summary to find min and max values in the range
+summary(gdppercap_high$val)
+#GDP per capita for the countries that moved from middle to high income
+#Min: 8608
+#Max: 35242
+
+#now lest subset the countries which are in middle incoem between 2010 and 2021
+middle_income <- c('Albania', 
+'Algeria', 
+'American Samoa', 
+'Argentina',
+'Armenia',
+'Azerbaijan',
+'Belarus',
+'Belize',
+'Bosnia and Herzegovina',
+'Botswana',
+'Brazil',
+'Bulgaria',
+'China',
+'Colombia',
+'Costa Rica',
+'Cuba',
+'Dominica',
+'Dominican Republic',
+'Ecuador',
+'Fiji',
+'Gabon',
+'Grenada',
+'Iran, Islamic Rep.',
+'Guatemala',
+'Guyana',
+'Iraq',
+'Jamaica',
+'Jordan',
+'Kazakhstan',
+'Lebanon',
+'Libya',
+'Malaysia',
+'Maldives',
+'Marshall Islands',
+'Mexico',
+'Montenegro',
+'Namibia',
+'North Macedonia',
+'Paraguay',
+'Peru',
+'Samoa',
+'Serbia',
+'South Africa',
+'St. Lucia',
+'St. Vincent and the Grenadines',
+'Suriname',
+'Thailand',
+'Tonga',
+'Türkiye',
+'Turkmenistan',
+'Tuvalu',
+'Venezuela, RB')
+
+
+#subset year and countries
+gdppercap_middle <- gdppercap_data %>% 
+  filter(Country%in%middle_income) %>% 
+  pivot_longer(!c("Country", "Code", "Series Name"), names_to = "year", values_to = "val") %>% 
+  filter(year%in%c('2010', '2011', '2012', '2013', '2014', '2015', '2016', 
+                   '2017', '2018', '2019', '2020', '2021')) 
+
+#converting to numeric column and dropping missing values
+gdppercap_middle$val <- as.numeric(gdppercap_middle$val)
+gdppercap_middle <- gdppercap_middle %>% 
+  drop_na()
+
+#taking the summary to find min and max values in the range
+summary(gdppercap_middle$val)
+#Min: 2890
+#Max: 14396
+
+#now dropping middle countries with GDP per cap below 8608
+gdppercap_middle_comp <- gdppercap_middle %>% 
+  filter(val>=8608) 
+
+#reading the energy source data
+energy_Consumption <- read.csv("primary-sub-energy-source.csv") 
+
+#subsetting for only relevant countries
+energy_countries_middle <- c(
+  "American Samoa", "Argentina", "Brazil", "Bulgaria", "China", "Costa Rica",
+  "Grenada", "Guyana", "Kazakhstan", "Lebanon", "Libya", "Malaysia", "Maldives", 
+  "Mexico", "St. Lucia", "Suriname")
+
+
+setdiff(energy_countries_middle, energy_Consumption$Entity)
+
+energy_countries_high <- c("Aruba", "Cyprus", "Greece", "South Korea",
+  "Macao SAR, China", "Portugal", "Saudi Arabia", "Slovenia")
+
+#subsetting middle income energy consumption from 2010-2021
+energy_Consumption_middle <- energy_Consumption %>% 
+  filter(Entity%in%energy_countries_middle) %>% 
+  filter(Year%in%c(2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+                   2020, 2021)) 
+
+#subsetting middle high energy consumption from 1989-2000
+energy_Consumption_high <- energy_Consumption %>% 
+  filter(Entity%in%energy_countries_high) %>% 
+  filter(Year%in%c(1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 
+                   1998, 1999, 2000)) 
+
+#calculating average for average, min and, max
+energy_Consumption_middle %>% 
+  group_by(Entity, Code) %>% 
+  summarise(wind_consumption_mean=mean(`Wind.Consumption...TWh`),
+            wind_consumption_min=min(`Wind.Consumption...TWh`),
+            wind_consumption_max=max(`Wind.Consumption...TWh`),
+            hydro_consumption_mean=mean(`Hydro.Consumption...TWh`),
+            hydro_consumption_min=min(`Hydro.Consumption...TWh`),
+            hydro_consumption_max=max(`Hydro.Consumption...TWh`),
+           solar_consumption_mean=mean(`Solar.Consumption...TWh`),
+            solar_consumption_min=min(`Solar.Consumption...TWh`),
+            solar_consumption_max=max(`Solar.Consumption...TWh`),
+           nuclear_consumption_mean=mean(`Nuclear.Consumption...TWh`),
+           nuclear_consumption_min=min(`Nuclear.Consumption...TWh`),
+           nuclear_consumption_max=max(`Nuclear.Consumption...TWh`),
+           biofuel_consumption_mean=mean(`Biofuels.Consumption...TWh...Total`),
+           biofuel_consumption_min=min(`Biofuels.Consumption...TWh...Total`),
+           biofuel_consumption_max=max(`Biofuels.Consumption...TWh...Total`),
+           biomass_consumption_mean=mean(`Geo.Biomass.Other...TWh`),
+           biomass_consumption_min=min(`Geo.Biomass.Other...TWh`),
+           biomass_consumption_max=max(`Geo.Biomass.Other...TWh`),
+           coal_consumption_mean=mean(`Coal.Consumption...TWh`),
+           coal_consumption_min=min(`Coal.Consumption...TWh`),
+           coal_consumption_max=max(`Coal.Consumption...TWh`),
+           oil_consumption_mean=mean(`Oil.Consumption...TWh`),
+           oil_consumption_min=min(`Oil.Consumption...TWh`),
+           oil_consumption_max=max(`Oil.Consumption...TWh`),
+           gas_consumption_mean=mean(`Gas.Consumption...TWh`),
+           gas_consumption_min=min(`Gas.Consumption...TWh`),
+           gas_consumption_max=max(`Gas.Consumption...TWh`)) %>% 
+  View()
+
+#printing the high and middle excel
+write_xlsx(energy_Consumption_middle, "energy_Consumption_middle.xlsx")
+
+#printing high income country
+write_xlsx(energy_Consumption_high, "energy_Consumption_high.xlsx")
