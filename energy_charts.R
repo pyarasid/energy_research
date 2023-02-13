@@ -7,6 +7,7 @@ library(hrbrthemes)
 library(tidyr)
 library(writexl)
 library(xlsx)
+library(CGPfunctions)
 
 ###CHART 2=====================
 
@@ -773,3 +774,37 @@ write_xlsx(energy_Consumption_middle, "energy_Consumption_middle.xlsx")
 
 #printing high income country
 write_xlsx(energy_Consumption_high, "energy_Consumption_high.xlsx")
+
+#creating slope graph
+lcoe <- read_excel("pv_wind_china.xlsx", sheet = "Sheet3")
+
+lcoe_lng <- lcoe %>% 
+  pivot_longer(!"Generation technology", names_to = "Year",
+               values_to = "lcoe") 
+
+lcoe_lng$Year <- paste0(lcoe_lng$Year, "($)",sep = "")
+
+
+lcoe_lng %>% 
+  newggslopegraph(Times = Year, Measurement = lcoe, 
+                  Grouping = `Generation technology`,
+                  LineThickness = 0.8,
+                  ThemeChoice = "tufte",
+                  LineColor = c("Gas peaker"="#1b9e77",
+                                "Nuclear"= "#d95f02",
+                                "Solar thermal tower"= "#7570b3",
+                                "Coal"= "#e7298a",
+                                "Geothermal"= "#66a61e",
+                                "Gas-combined cycle"= "#e6ab02",
+                                "Wind"= "#a6761d",
+                                "Solar PV-Crystalline"= "#666666"),
+                  Title = "Levelized Cost of Energy ($/MWh)",
+                  SubTitle = NULL,
+                  DataTextSize = 3, 
+                  YTextSize = 4,
+                  TitleTextSize = 16,
+                  SubTitleTextSize = 12,
+                  DataLabelPadding=0.001,
+                  Caption=NULL)
+
+ggsave("lcoe.png", dpi = 300, height = 8, width = 8, bg = "white")
